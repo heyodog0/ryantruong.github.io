@@ -15,13 +15,15 @@
 ]
 
 // --- Macros ---
-#let job(title, dates, role, footer, items) = block(spacing: 0pt)[
+#let job(title, dates, role, footer, items: none) = block(spacing: 0pt)[
   #strong(title) #h(1fr) #dates \
   #emph(role) \
   #v(0.2em) // Tiny gap before the PI line
   #text(size: 9.5pt, fill: luma(80))[#footer] // Removed bold, made it dark gray
-  #v(0.4em) // Gap between header info and bullets
-  #items
+  #if items != none [
+    #v(0.4em) // Gap between header info and bullets
+    #items
+  ]
   #v(14pt) // Good separation between jobs
 ]
 
@@ -76,44 +78,28 @@
   "CCN Lab, Harvard University",
   "7/2024 - 2025 | 9/2025 - Present",
   "RA / Graduate RA",
-  [PI: Sam Gershman | Supervisor(s): Lance Ying],
-  [
-    - Developed online interfaces for computational cognitive science experiments
-    - Working on computational models of cognition
-  ]
+  [PI: Sam Gershman | Supervisor(s): Lance Ying]
 )
 
 #job(
   "Goris Lab, UT Austin",
   "1/2023 - 6/2024 | 9/2024 - 5/2025",
   "Research / Laboratory Technician",
-  [PI: Robbe Goris | Supervisor(s): Gabriela Coello-Reyes, Akash Raj],
-  [
-    - Managed non-human primate (NHP) care and surgical procedures, including enrichment, chairing, and margin cleanings
-    - Examined visual restoration by modeling and analyzing lesioned artificial neural networks
-  ]
+  [PI: Robbe Goris | Supervisor(s): Gabriela Coello-Reyes, Akash Raj]
 )
 
 #job(
   "CasCogLab, UT Austin",
   "9/2023 - 6/2024 | 9/2024 - 5/2025",
   "Part-time RA",
-  [PI: Desmond Ong | Supervisor(s): Emma Gueorguieva, Yoon Kyung Lee],
-  [
-    - Assisted with experimental studies and transcriptions
-    - Made Empathy-Intervention web platform
-  ]
+  [PI: Desmond Ong | Supervisor(s): Emma Gueorguieva, Yoon Kyung Lee]
 )
 
 #job(
   "Gabrieli Lab, MIT McGovern Institute",
   "6/2024 - 11/2024",
   "Summer Research Intern",
-  [PI: John Gabrieli | Supervisor(s): Clark Roberts],
-  [
-    - Created custom fMRI tasks for clinical trials and DDM models for binary choice tasks
-    - Modeled latent class trajectories and cross-lagged network models for mental health outcomes in open-source datasets (ABCD dataset)
-  ]
+  [PI: John Gabrieli | Supervisor(s): Clark Roberts]
 )
 
 
