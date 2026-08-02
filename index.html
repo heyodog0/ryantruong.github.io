@@ -31,9 +31,11 @@
             <div id="game-section">
                 <div class="game-wrapper">
                     <div id="game-container"></div>
+                    <!-- Sits over the board so winning doesn't add a row and
+                         shove the D-pad down the page. -->
+                    <div id="win-message" class="hidden">You win!</div>
                     <div class="game-controls">
                         <button class="reset-btn" data-action="reset">Reset</button>
-                        <div id="win-message" class="hidden">You win!</div>
                         <button id="play-again-btn" class="hidden" data-action="play-again">Play again?</button>
                     </div>
                 </div>

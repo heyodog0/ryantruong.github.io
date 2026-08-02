@@ -177,11 +177,26 @@
     transform: scale(0.94);
 }
 
+/* Overlays the board rather than taking a row in the controls, so the layout
+   height is identical whether or not you've won. */
 #win-message {
-    margin: 10px 0;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: calc(var(--cell) * 5);
+    height: calc(var(--cell) * 5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-weight: bold;
     color: var(--win-color, var(--game-green));
+    text-shadow: 0 1px 3px var(--game-board), 0 0 8px var(--game-board);
+    pointer-events: none;
     animation: pop-in 320ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+/* The id outranks .hidden on its own, so hiding needs the same weight. */
+#win-message.hidden {
+    display: none;
 }
 
 @keyframes pop-in {
