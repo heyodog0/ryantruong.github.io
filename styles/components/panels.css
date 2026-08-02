@@ -4,6 +4,7 @@
        PDF's own scroll does the paging. */
     --cv-embed-height: min(800px, max(420px, calc(100vh - var(--cv-chrome-height) - 48px)));
     --cv-chrome-height: 210px; /* h1 + nav + tagline + fallback link + social icons */
+    --pubs-chrome-height: 190px; /* h1 + nav + tagline + social icons */
 }
 
 body { justify-content: flex-start; }
@@ -18,10 +19,19 @@ body { justify-content: flex-start; }
         calc((100vh - var(--cv-embed-height) - var(--cv-chrome-height)) / 2)
     );
 }
+/* Same treatment for the pubs list; its height is measured in view-swap.js
+   since it grows as papers are added. */
+.content.view-pubs {
+    padding-top: max(
+        24px,
+        calc((100vh - var(--pubs-panel-height, 560px) - var(--pubs-chrome-height)) / 2)
+    );
+}
 @media (max-width: 600px) {
     body { justify-content: center; }
     .content,
-    .content.view-cv {
+    .content.view-cv,
+    .content.view-pubs {
         justify-content: center;
         padding-top: 0;
     }
@@ -61,6 +71,169 @@ body { justify-content: flex-start; }
 }
 #bio-panel p {
     margin: 0;
+}
+
+#research-panel {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(680px, 92vw);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.12s ease;
+    color: var(--text-color);
+    text-align: left;
+}
+
+/* Publications / Highlights toggle */
+.subtabs {
+    display: flex;
+    justify-content: center;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 1.6rem;
+    /* Same nudge as the nav row, so the two rows share an optical centre. */
+    transform: translateX(var(--nav-offset, 0px));
+}
+.subtab {
+    color: var(--text-color);
+    text-decoration: none;
+    font-size: 0.9rem;
+    opacity: 0.5;
+}
+.subtab:hover {
+    opacity: 0.8;
+}
+.subtab.active {
+    opacity: 1;
+    border-bottom: 1px solid currentColor;
+}
+.subtab-sep {
+    opacity: 0.35;
+    font-size: 0.9rem;
+}
+.research-view {
+    display: none;
+}
+.research-view.active {
+    display: block;
+}
+
+/* Highlights: thumbnail left, details right */
+.hl-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.hl {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+}
+.hl + .hl {
+    margin-top: 1.1rem;
+    padding-top: 1.1rem;
+    border-top: 1px solid var(--text-color);
+    border-color: color-mix(in srgb, var(--text-color) 15%, transparent);
+}
+/* A real <img> at its natural aspect ratio: no fixed box, so no letterbox
+   bars, and paper figures keep every panel. */
+.hl-thumb {
+    flex: 0 0 210px;
+    width: 210px;
+    height: auto;
+    display: block;
+    border-radius: 3px;
+}
+.hl-body {
+    flex: 1;
+    min-width: 0;
+}
+.hl-body p {
+    margin: 0;
+    line-height: 1.4;
+}
+.hl-title {
+    font-size: 0.95rem;
+}
+.hl-authors {
+    margin-top: 0.2rem !important;
+    font-size: 0.8rem;
+    opacity: 0.7;
+}
+.hl-venue {
+    margin-top: 0.2rem !important;
+    font-family: Georgia, serif;
+    font-style: italic;
+    font-size: 0.8rem;
+    opacity: 0.7;
+}
+.hl-links {
+    margin-top: 0.35rem !important;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 0.8rem;
+}
+.hl-links a {
+    color: var(--link-color, #4a7fd5);
+    text-decoration: none;
+}
+.hl-links a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 600px) {
+    .hl {
+        flex-direction: column;
+    }
+    .hl-thumb {
+        flex: none;
+        width: 100%;
+        max-width: 320px;
+    }
+}
+.pub-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.pub + .pub {
+    margin-top: 1.4rem;
+}
+.pub p {
+    margin: 0;
+    line-height: 1.45;
+}
+.pub-authors {
+    font-size: 0.85rem;
+    opacity: 0.75;
+}
+.pub-title {
+    margin-top: 0.15rem !important;
+    font-size: 1rem;
+}
+.pub-title a {
+    color: var(--text-color);
+    text-decoration: none;
+    border-bottom: 1px solid currentColor;
+    opacity: 0.9;
+}
+.pub-title a:hover {
+    opacity: 1;
+}
+.pub-venue {
+    margin-top: 0.15rem !important;
+    font-family: Georgia, serif;
+    font-style: italic;
+    font-size: 0.85rem;
+    opacity: 0.7;
+}
+.pub-note {
+    margin: 1.6rem 0 0;
+    font-size: 0.75rem;
+    opacity: 0.6;
 }
 
 #cv-panel {

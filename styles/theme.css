@@ -7,6 +7,7 @@
     --border-color: #dddddd;
     --toggle-bg: #f0f0f0;
     --toggle-color: #333333;
+    --link-color: #2f5fb3;
 }
 
 :root.dark-mode {
@@ -17,6 +18,7 @@
     --border-color: #404040;
     --toggle-bg: #404040;
     --toggle-color: #ffffff;
+    --link-color: #7aa7f0;
 }
 
 /* Theme toggle button */

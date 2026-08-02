@@ -29,16 +29,25 @@ h1 {
 
 nav {
     margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    /* Even gaps would leave the middle link off-centre, since the outer labels
+       differ in width. view-swap.js nudges the row by half that difference so
+       the middle link sits on the page centre with the gaps still equal. */
+    transform: translateX(var(--nav-offset, 0px));
 }
 
 nav a {
     display: inline-block;
-    margin: 0 10px;
+    margin: 0;
     color: var(--text-color);
     text-decoration: none;
     font-size: 1rem;
     opacity: 0.8;
+    white-space: nowrap;
 }
+
 
 nav a:hover {
     opacity: 1;
