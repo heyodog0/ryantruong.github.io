@@ -1,187 +1,209 @@
-const EMPTY = 0;
-const PLAYER = 1;
-const BLOCK = 2;
-const TARGET = 3;
-const PLAYER_ON_TARGET = 4;
+/* Sokoban: push the block onto the target.
+ *
+ * The player, block and target are persistent DOM nodes moved with transforms,
+ * rather than a grid re-rendered each turn — that's what lets moves animate.
+ * Each entity is two elements: the outer one translates (position), the inner
+ * .skin scales (squash, pop). Keeping them separate means a squash can play
+ * while a slide is still in flight without the two transforms fighting. */
 
-let gameState = {
-    grid: [],
-    playerPos: { x: 0, y: 0 },
-    targetPos: { x: 0, y: 0 }
-};
+const SIZE = 5;
+const CELL = 32; // keep in sync with --cell in game.css
 
-let initialGameState = null;
+const board = document.getElementById('game-container');
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-function createRandomLevel() {
-    const grid = Array(5).fill().map(() => Array(5).fill(EMPTY));
-    const playerPos = { x: Math.floor(Math.random() * 5), y: Math.floor(Math.random() * 5) };
-    grid[playerPos.y][playerPos.x] = PLAYER;
+let player, block, target, initial;
+let won = false;
+const els = {};
 
-    let blockPos;
-    do {
-        blockPos = { 
-            x: Math.floor(Math.random() * 3) + 1, 
-            y: Math.floor(Math.random() * 3) + 1 
-        };
-    } while (grid[blockPos.y][blockPos.x] !== EMPTY);
-    grid[blockPos.y][blockPos.x] = BLOCK;
+function randCell() {
+    return { x: Math.floor(Math.random() * SIZE), y: Math.floor(Math.random() * SIZE) };
+}
+const same = (a, b) => a.x === b.x && a.y === b.y;
+const inBounds = p => p.x >= 0 && p.x < SIZE && p.y >= 0 && p.y < SIZE;
 
-    let targetPos;
-    do {
-        targetPos = { x: Math.floor(Math.random() * 5), y: Math.floor(Math.random() * 5) };
-    } while (grid[targetPos.y][targetPos.x] !== EMPTY);
-    grid[targetPos.y][targetPos.x] = TARGET;
+const COLORS = ['c-blue', 'c-red', 'c-green'];
 
-    return { grid, playerPos, targetPos };
+function shuffle(list) {
+    const out = list.slice();
+    for (let i = out.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [out[i], out[j]] = [out[j], out[i]];
+    }
+    return out;
 }
 
-function renderGame() {
-    const container = document.getElementById('game-container');
-    container.innerHTML = '';
-    
-    for (let y = 0; y < gameState.grid.length; y++) {
-        const row = document.createElement('div');
-        row.className = 'game-row';
-        
-        for (let x = 0; x < gameState.grid[y].length; x++) {
-            const cell = document.createElement('div');
-            cell.className = 'game-cell';
+function createRandomLevel() {
+    const p = randCell();
+    // Block starts off the edges so it can always be pushed somewhere.
+    let b;
+    do {
+        b = { x: Math.floor(Math.random() * 3) + 1, y: Math.floor(Math.random() * 3) + 1 };
+    } while (same(b, p));
+    let t;
+    do {
+        t = randCell();
+    } while (same(t, p) || same(t, b));
 
-            const content = document.createElement('div');
-            
-            switch (gameState.grid[y][x]) {
-                case PLAYER:
-                    content.className = 'player';
-                    break;
-                case BLOCK:
-                    content.className = 'block';
-                    break;
-                case TARGET:
-                    content.className = 'target';
-                    break;
-                case PLAYER_ON_TARGET:
-                    content.className = 'player-on-target';
-                    break;
-            }
-            
-            cell.appendChild(content);
-            row.appendChild(cell);
-        }
-        
-        container.appendChild(row);
+    // Which colour plays which role is randomised too, so you have to work out
+    // which piece you are.
+    const [pc, bc, tc] = shuffle(COLORS);
+    return { player: p, block: b, target: t, colors: { player: pc, block: bc, target: tc } };
+}
+
+function applyColors(colors) {
+    for (const role of ['player', 'block', 'target']) {
+        els[role].classList.remove(...COLORS);
+        els[role].classList.add(colors[role]);
     }
+}
+
+function entity(kind) {
+    const el = document.createElement('div');
+    el.className = 'entity ' + kind;
+    const skin = document.createElement('div');
+    skin.className = 'skin';
+    el.appendChild(skin);
+    board.appendChild(el);
+    return el;
+}
+
+function buildBoard() {
+    board.innerHTML = '';
+    els.target = entity('target');
+    els.block = entity('block');
+    els.player = entity('player');
+}
+
+function place(el, pos) {
+    el.style.setProperty('--tx', pos.x * CELL + 'px');
+    el.style.setProperty('--ty', pos.y * CELL + 'px');
+}
+
+// Re-adding a class in the same frame won't restart a CSS animation; forcing a
+// reflow between removal and addition does.
+function replay(el, cls) {
+    if (reduceMotion) return;
+    el.classList.remove(cls);
+    void el.offsetWidth;
+    el.classList.add(cls);
+}
+
+function squash(el, dx) {
+    replay(el.querySelector('.skin'), dx !== 0 ? 'squash-x' : 'squash-y');
+}
+
+// Blocked move: lean into the obstacle and spring back, and knock the board
+// along the axis of the collision — sideways for side walls, vertically for
+// the top and bottom.
+function bump(dx, dy) {
+    els.player.style.setProperty('--bx', dx * 7 + 'px');
+    els.player.style.setProperty('--by', dy * 7 + 'px');
+    board.style.setProperty('--sx', dx * 2 + 'px');
+    board.style.setProperty('--sy', dy * 2 + 'px');
+    replay(els.player, 'bump');
+    replay(board, 'shake');
 }
 
 function movePlayer(dx, dy) {
-    const newX = gameState.playerPos.x + dx;
-    const newY = gameState.playerPos.y + dy;
-    
-    if (newX >= 0 && newX < 5 && newY >= 0 && newY < 5) {
-        if (gameState.grid[newY][newX] === BLOCK) {
-            const pushX = newX + dx;
-            const pushY = newY + dy;
-            
-            if (pushX >= 0 && pushX < 5 && pushY >= 0 && pushY < 5 && 
-                (gameState.grid[pushY][pushX] === EMPTY || gameState.grid[pushY][pushX] === TARGET)) {
-                gameState.grid[pushY][pushX] = BLOCK;
-                gameState.grid[newY][newX] = (newX === gameState.targetPos.x && newY === gameState.targetPos.y) ? 
-                    PLAYER_ON_TARGET : PLAYER;
-                gameState.grid[gameState.playerPos.y][gameState.playerPos.x] = 
-                    (gameState.playerPos.x === gameState.targetPos.x && gameState.playerPos.y === gameState.targetPos.y) ? 
-                    TARGET : EMPTY;
-                gameState.playerPos = { x: newX, y: newY };
-                
-                if (pushX === gameState.targetPos.x && pushY === gameState.targetPos.y) {
-                    checkWin();
-                }
-            }
-        } else if (gameState.grid[newY][newX] === EMPTY || gameState.grid[newY][newX] === TARGET) {
-            gameState.grid[newY][newX] = (newX === gameState.targetPos.x && newY === gameState.targetPos.y) ? 
-                PLAYER_ON_TARGET : PLAYER;
-            gameState.grid[gameState.playerPos.y][gameState.playerPos.x] = 
-                (gameState.playerPos.x === gameState.targetPos.x && gameState.playerPos.y === gameState.targetPos.y) ? 
-                TARGET : EMPTY;
-            gameState.playerPos = { x: newX, y: newY };
-        }
+    if (won) return;
+
+    const next = { x: player.x + dx, y: player.y + dy };
+    if (!inBounds(next)) return bump(dx, dy);
+
+    if (same(next, block)) {
+        const pushed = { x: block.x + dx, y: block.y + dy };
+        if (!inBounds(pushed)) return bump(dx, dy);
+
+        block = pushed;
+        place(els.block, block);
+        squash(els.block, dx);
+        replay(els.block, 'nudged');
+
+        player = next;
+        place(els.player, player);
+        squash(els.player, dx);
+
+        if (same(block, target)) landOnTarget();
+        return;
     }
-    
-    renderGame();
+
+    player = next;
+    place(els.player, player);
+    squash(els.player, dx);
 }
 
-function checkWin() {
-    if (gameState.grid[gameState.targetPos.y][gameState.targetPos.x] === BLOCK) {
-        showWinEffect();
+function landOnTarget() {
+    won = true;
+    board.classList.add('game-won');
+    els.target.classList.add('filled');
+    replay(els.block, 'pop');
+
+    const win = document.getElementById('win-message');
+    // Message picks up whichever colour happens to be the goal this round.
+    win.style.color = getComputedStyle(els.target.querySelector('.skin')).backgroundColor;
+    win.classList.remove('hidden');
+    document.getElementById('play-again-btn').classList.remove('hidden');
+    document.querySelector('.reset-btn').classList.add('hidden');
+}
+
+function layout(instant) {
+    if (instant) board.classList.add('no-anim');
+    place(els.target, target);
+    place(els.block, block);
+    place(els.player, player);
+    if (instant) {
+        void board.offsetWidth; // flush before re-enabling transitions
+        board.classList.remove('no-anim');
     }
 }
 
-function showWinEffect() {
-    const gameContainer = document.getElementById('game-container');
-    const winMessage = document.getElementById('win-message');
-    const playAgainBtn = document.getElementById('play-again-btn');
-    const resetBtn = document.querySelector('.reset-btn');
-    
-    gameContainer.classList.add('game-won');
-    winMessage.classList.remove('hidden');
-    playAgainBtn.classList.remove('hidden');
-    resetBtn.classList.add('hidden');
+function loadLevel(level) {
+    ({ player, block, target } = level);
+    won = false;
+    board.classList.remove('game-won');
+    els.target.classList.remove('filled');
+    applyColors(level.colors);
+    layout(true);
+
+    document.getElementById('win-message').classList.add('hidden');
+    document.getElementById('play-again-btn').classList.add('hidden');
+    document.querySelector('.reset-btn').classList.remove('hidden');
 }
 
 function startNewGame() {
-    const gameContainer = document.getElementById('game-container');
-    const winMessage = document.getElementById('win-message');
-    const playAgainBtn = document.getElementById('play-again-btn');
-    const resetBtn = document.querySelector('.reset-btn');
-    
-    gameContainer.classList.remove('game-won');
-    winMessage.classList.add('hidden');
-    playAgainBtn.classList.add('hidden');
-    resetBtn.classList.remove('hidden');
-    
-    gameState = createRandomLevel();
-    initialGameState = JSON.parse(JSON.stringify(gameState)); // Store initial state
-    renderGame();
+    initial = createRandomLevel();
+    loadLevel(structuredClone(initial));
+    replay(els.player, 'drop-in');
+    replay(els.block, 'drop-in');
 }
 
 function resetGame() {
-    if (initialGameState) {
-        gameState = JSON.parse(JSON.stringify(initialGameState)); // Deep copy the initial state
-    } else {
-        gameState = createRandomLevel();
-        initialGameState = JSON.parse(JSON.stringify(gameState));
-    }
-    
-    renderGame();
-    
-    const gameContainer = document.getElementById('game-container');
-    const winMessage = document.getElementById('win-message');
-    const playAgainBtn = document.getElementById('play-again-btn');
-    
-    gameContainer.classList.remove('game-won');
-    winMessage.classList.add('hidden');
-    playAgainBtn.classList.add('hidden');
+    loadLevel(structuredClone(initial));
 }
 
-document.addEventListener('keydown', (event) => {
-    switch (event.key) {
-        case 'ArrowUp':
-            movePlayer(0, -1);
-            break;
-        case 'ArrowDown':
-            movePlayer(0, 1);
-            break;
-        case 'ArrowLeft':
-            movePlayer(-1, 0);
-            break;
-        case 'ArrowRight':
-            movePlayer(1, 0);
-            break;
+/* ---------- input ---------- */
+
+document.addEventListener('keydown', event => {
+    const moves = {
+        ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0],
+    };
+    const move = moves[event.key];
+    if (move) {
+        event.preventDefault();
+        movePlayer(move[0], move[1]);
     }
 });
 
-document.addEventListener('click', (event) => {
+function pressFeedback(btn) {
+    replay(btn, 'pressed');
+}
+
+document.addEventListener('click', event => {
     const moveBtn = event.target.closest('[data-move]');
     if (moveBtn) {
         const [dx, dy] = moveBtn.dataset.move.split(',').map(Number);
+        pressFeedback(moveBtn);
         movePlayer(dx, dy);
         return;
     }
@@ -192,22 +214,23 @@ document.addEventListener('click', (event) => {
     }
 });
 
-document.addEventListener('touchstart', (event) => {
+document.addEventListener('touchstart', event => {
     const moveBtn = event.target.closest('[data-move]');
     if (moveBtn) {
         event.preventDefault();
         const [dx, dy] = moveBtn.dataset.move.split(',').map(Number);
+        pressFeedback(moveBtn);
         movePlayer(dx, dy);
     }
 }, { passive: false });
 
-startNewGame();
-
-var lastTouchEnd = 0;
-document.addEventListener('touchend', function(event) {
-    var now = (new Date()).getTime();
-    if (now - lastTouchEnd <= 300) {
-        event.preventDefault();
-    }
+// Stop double-tap zoom on the control pad.
+let lastTouchEnd = 0;
+document.addEventListener('touchend', event => {
+    const now = Date.now();
+    if (now - lastTouchEnd <= 300) event.preventDefault();
     lastTouchEnd = now;
 }, false);
+
+buildBoard();
+startNewGame();

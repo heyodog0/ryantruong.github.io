@@ -40,11 +40,10 @@
     color: var(--toggle-color);
 }
 
-/* Dark mode specific overrides */
-.dark-mode .player { background-color: #4a9eff; }
-.dark-mode .block { background-color: #ff6b6b; }
-.dark-mode .target { background-color: #4ade80; }
-.dark-mode .player-on-target { background-color: #4a9eff; }
+/* Game piece colours for both themes live in components/game.css, on the inner
+   .skin element — don't set them on .player/.block/.target here. Those are the
+   outer, un-rounded wrappers, so a background on them shows as square corners
+   behind the rounded piece. */
 body, html {
     background-color: var(--bg-color);
     color: var(--text-color);

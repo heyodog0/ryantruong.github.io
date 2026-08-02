@@ -1,16 +1,157 @@
-/* Game-specific styles */
+/* Sokoban board, entities and their animations.
+   Entities are absolutely positioned and moved by transform, so the board
+   itself has no cells — hence no gridlines. */
+:root {
+    --cell: 32px;            /* keep in sync with CELL in scripts/game.js */
+    --piece: 26px;
+    --piece-inset: 3px;
+    /* Colours are assigned to roles at random each game, so they're named by
+       colour rather than by role. */
+    --game-blue: #2f6fed;
+    --game-red: #e5484d;
+    --game-green: #30a46c;
+    --game-board: #f4f4f5;
+}
+:root.dark-mode {
+    --game-blue: #5b8cff;
+    --game-red: #ff6169;
+    --game-green: #3dd68c;
+    --game-board: #242426;
+}
+
 .game-wrapper {
     position: relative;
     display: inline-block;
 }
 
 #game-container {
-    transition: filter 0.3s ease;
+    position: relative;
+    width: calc(var(--cell) * 5);
+    height: calc(var(--cell) * 5);
+    background: var(--game-board);
+    border-radius: 8px;
+    transition: opacity 0.3s ease;
 }
 
+/* Won: dim slightly rather than draining the colour, so the celebration reads. */
 #game-container.game-won {
-    filter: grayscale(100%) brightness(70%);
+    opacity: 0.9;
 }
+
+/* ---------- entities ---------- */
+
+.entity {
+    position: absolute;
+    top: var(--piece-inset);
+    left: var(--piece-inset);
+    width: var(--piece);
+    height: var(--piece);
+    transform: translate3d(var(--tx, 0), var(--ty, 0), 0);
+    /* Slight overshoot: the piece arrives, then settles. */
+    transition: transform 150ms cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+/* Used while snapping pieces into place on reset/new game. */
+#game-container.no-anim .entity {
+    transition: none;
+}
+
+/* All three pieces get identical treatment; only the hue differs, and which
+   hue lands on which role is randomised per game in game.js. */
+.skin {
+    width: 100%;
+    height: 100%;
+    border-radius: 8px;
+    transform-origin: center;
+    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.18);
+}
+.c-blue .skin  { background: var(--game-blue); }
+.c-red .skin   { background: var(--game-red); }
+.c-green .skin { background: var(--game-green); }
+
+.target.filled .skin {
+    animation: target-fill 320ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Target sits under the pieces. */
+.target { z-index: 0; }
+.block  { z-index: 1; }
+.player { z-index: 2; }
+
+/* ---------- animations ---------- */
+
+/* Squash along the axis of travel, then settle — the classic bit of
+   anticipation that makes movement feel weighty rather than teleporty. */
+@keyframes squash-x {
+    0%   { transform: scale(1.2, 0.82); }
+    60%  { transform: scale(0.94, 1.05); }
+    100% { transform: scale(1, 1); }
+}
+@keyframes squash-y {
+    0%   { transform: scale(0.82, 1.2); }
+    60%  { transform: scale(1.05, 0.94); }
+    100% { transform: scale(1, 1); }
+}
+.skin.squash-x { animation: squash-x 180ms ease-out; }
+.skin.squash-y { animation: squash-y 180ms ease-out; }
+
+/* Blocked move: lean into the wall and spring back. Runs on the outer element,
+   reusing --tx/--ty so the piece returns to exactly where it was. */
+@keyframes bump {
+    0%   { transform: translate3d(var(--tx), var(--ty), 0); }
+    35%  { transform: translate3d(calc(var(--tx) + var(--bx, 0px)),
+                                  calc(var(--ty) + var(--by, 0px)), 0); }
+    100% { transform: translate3d(var(--tx), var(--ty), 0); }
+}
+.entity.bump {
+    /* Paced to match the board knock so the collision reads as one event. */
+    animation: bump 300ms cubic-bezier(0.33, 0.8, 0.35, 1);
+}
+
+/* Knock the board along the axis you collided on, starting toward the wall.
+   game.js sets --sx/--sy from the attempted direction. */
+/* One slow push into the wall and back — no overshoot past the start, which is
+   what made this read as a vibration rather than a knock. */
+@keyframes shake {
+    0%   { transform: translate(0, 0); }
+    45%  { transform: translate(var(--sx, 0px), var(--sy, 0px)); }
+    100% { transform: translate(0, 0); }
+}
+#game-container.shake {
+    animation: shake 300ms cubic-bezier(0.33, 0.8, 0.35, 1);
+}
+
+/* Pushed block gets a brief highlight so the push reads as contact. */
+@keyframes nudged {
+    0%   { filter: brightness(1.35); }
+    100% { filter: brightness(1); }
+}
+.entity.nudged { animation: nudged 220ms ease-out; }
+
+@keyframes pop {
+    0%   { transform: translate3d(var(--tx), var(--ty), 0) scale(1); }
+    45%  { transform: translate3d(var(--tx), var(--ty), 0) scale(1.32); }
+    100% { transform: translate3d(var(--tx), var(--ty), 0) scale(1); }
+}
+.entity.pop { animation: pop 420ms cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+@keyframes target-fill {
+    0%   { transform: scale(0.6); }
+    100% { transform: scale(1); }
+}
+
+@keyframes drop-in {
+    0%   { transform: translate3d(var(--tx), var(--ty), 0) scale(0.2); opacity: 0; }
+    100% { transform: translate3d(var(--tx), var(--ty), 0) scale(1); opacity: 1; }
+}
+.entity.drop-in { animation: drop-in 280ms cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+@media (prefers-reduced-motion: reduce) {
+    .entity { transition: none; }
+    .entity, .skin, #game-container { animation: none !important; }
+}
+
+/* ---------- controls ---------- */
 
 .game-controls {
     margin-top: 10px;
@@ -26,50 +167,30 @@
     color: var(--text-color);
     border: 1px solid var(--border-color);
     border-radius: 4px;
-    transition: background-color 0.3s ease;
+    transition: background-color 0.2s ease, transform 0.1s ease;
 }
 
 .reset-btn:hover, #play-again-btn:hover {
     background-color: var(--border-color);
 }
+.reset-btn:active, #play-again-btn:active {
+    transform: scale(0.94);
+}
 
 #win-message {
     margin: 10px 0;
     font-weight: bold;
-    color: green;
+    color: var(--win-color, var(--game-green));
+    animation: pop-in 320ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes pop-in {
+    0%   { transform: scale(0.7); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
 }
 
 .hidden {
     display: none;
-}
-
-.game-row {
-    display: flex;
-}
-
-.game-cell {
-    width: 30px;
-    height: 30px;
-    border: 1px solid #ccc;
-    position: relative;
-}
-
-.player, .block, .target, .player-on-target {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-}
-
-.player { background-color: blue; }
-.block { background-color: red; }
-.target { background-color: lightgreen; }
-
-.player-on-target {
-    background-color: blue; 
-    border: 2px solid lightgreen;
-    box-sizing: border-box;
 }
 
 #controls {
@@ -94,13 +215,21 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    transition: background-color 0.15s ease;
 }
 
 .control-btn:hover {
     background-color: var(--border-color);
 }
 
+/* Tap feedback that works for touch as well as mouse. */
+@keyframes pressed {
+    0%   { transform: scale(0.88); }
+    100% { transform: scale(1); }
+}
+.control-btn.pressed { animation: pressed 160ms cubic-bezier(0.34, 1.56, 0.64, 1); }
+
 #up { grid-area: up; }
 #left { grid-area: left; }
 #down { grid-area: down; }
-#right { grid-area: right; } 
+#right { grid-area: right; }
