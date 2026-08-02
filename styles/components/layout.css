@@ -28,11 +28,30 @@
     body {
         justify-content: center;
     }
+    /* Centred content that's taller than the viewport overflows off the top and
+       can't be scrolled back to, so pin the body as well once a panel is open. */
+    body.panel-open {
+        justify-content: flex-start;
+    }
+    /* The game is short, so centring it in the viewport looks right. */
     .content,
     .content.view-cv,
     .content.view-research {
         justify-content: center;
         padding-top: 0;
+    }
+    /* Panels are taller than the game, and centring means every change to the
+       swap container's height re-centres the whole column — dragging the title
+       and nav around mid-transition. Pin to the top while a panel is open. */
+    .content.panel-open,
+    .content.panel-open.view-cv,
+    .content.panel-open.view-research {
+        justify-content: flex-start;
+        padding-top: 16px;
+    }
+    /* Animating height on top of that just prolongs the reflow. */
+    .swap-container {
+        transition: none;
     }
 }
 
