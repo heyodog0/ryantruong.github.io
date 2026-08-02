@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+        // Apply theme before paint so there's no flash
+        const savedTheme = localStorage.getItem('theme');
+        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
+            document.documentElement.classList.add('dark-mode');
+        }
+    </script>
+
+    <!-- EDIT: title shows in the browser tab and in search results -->
+    <title>heyodogo — Ryan Truong</title>
+    <!-- EDIT: one sentence, used by search engines and link previews -->
+    <meta name="description" content="A first note.">
+
+    <link rel="stylesheet" href="../styles/main.css">
+    <meta name="color-scheme" content="light dark">
+</head>
+<body class="post-page">
+    <div class="post-wrap">
+        <a class="post-home" href="../index.html">Ryan Truong</a>
+
+        <!-- EDIT: the title and date -->
+        <h1 class="post-title-main">heyodogo</h1>
+        <p class="post-meta">August 1, 2026</p>
+
+        <div class="post-body">
+            <!-- ================= WRITE THINGS BELOW ================= -->
+
+            <p>hello</p>
+
+<pre><code>print("hello world")</code></pre>
+
+<pre><code>def softmax(x):
+    e = np.exp(x - np.max(x))
+    return e / e.sum()
+</code></pre>
+
+            <p>goodbye</p>
+
+            <!-- ================= WRITE THINGS ABOVE ================= -->
+        </div>
+
+        <div class="post-foot">
+            <a href="../index.html">← Back</a>
+        </div>
+    </div>
+
+    <script src="../scripts/theme.js"></script>
+</body>
+</html>

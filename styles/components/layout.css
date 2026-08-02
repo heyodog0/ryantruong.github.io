@@ -1,4 +1,61 @@
-/* Social icons */
+/* Page-level layout: per-view vertical placement, the swap container that
+   holds the panels, and the social icon row. */
+:root {
+    /* CV: shrink to fit short viewports so the page itself never scrolls and
+       the PDF's own scroll does the paging. */
+    --cv-embed-height: min(800px, max(420px, calc(100vh - var(--cv-chrome-height) - 48px)));
+    --cv-chrome-height: 210px;      /* h1 + tagline + nav + fallback link + icons */
+    --research-chrome-height: 190px; /* h1 + tagline + nav + icons */
+}
+
+/* Both tall views centre themselves vertically. The CV's height comes from a
+   CSS variable; the research panel's is measured in view-swap.js because it
+   grows as entries are added. */
+.content.view-cv {
+    padding-top: max(
+        16px,
+        calc((100vh - var(--cv-embed-height) - var(--cv-chrome-height)) / 2)
+    );
+}
+.content.view-research {
+    padding-top: max(
+        24px,
+        calc((100vh - var(--research-panel-height, 560px) - var(--research-chrome-height)) / 2)
+    );
+}
+
+@media (max-width: 600px) {
+    body {
+        justify-content: center;
+    }
+    .content,
+    .content.view-cv,
+    .content.view-research {
+        justify-content: center;
+        padding-top: 0;
+    }
+}
+
+/* Panels are absolutely positioned inside this, so its height is animated in
+   JS to match whichever one is showing. */
+.swap-container {
+    position: relative;
+    transition: height 0.2s ease;
+}
+
+#game-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    opacity: 1;
+    pointer-events: auto;
+    transition: opacity 0.12s ease;
+}
+#game-section.faded {
+    opacity: 0;
+    pointer-events: none;
+}
+
 .social-icons {
     margin-top: 20px;
 }

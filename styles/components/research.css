@@ -1,0 +1,156 @@
+/* Research panel: the Highlights / Publications sub-tabs and their two lists. */
+#research-panel {
+    width: min(680px, 92vw);
+    text-align: left;
+}
+
+/* Sub-tab toggle */
+.subtabs {
+    display: flex;
+    justify-content: center;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 1.6rem;
+    /* Same nudge as the nav row, so the two rows share an optical centre. */
+    transform: translateX(var(--nav-offset, 0px));
+}
+.subtab {
+    color: var(--text-color);
+    text-decoration: none;
+    font-size: 0.9rem;
+    opacity: 0.5;
+}
+.subtab:hover {
+    opacity: 0.8;
+}
+.subtab.active {
+    opacity: 1;
+    border-bottom: 1px solid currentColor;
+}
+.subtab-sep {
+    opacity: 0.35;
+    font-size: 0.9rem;
+}
+.research-view {
+    display: none;
+}
+.research-view.active {
+    display: block;
+}
+
+/* Highlights: thumbnail left, details right */
+.hl-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.hl {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+}
+.hl + .hl {
+    margin-top: 1.1rem;
+    padding-top: 1.1rem;
+    border-top: 1px solid color-mix(in srgb, var(--text-color) 15%, transparent);
+}
+/* A real <img> at its natural aspect ratio: no fixed box, so no letterbox
+   bars, and paper figures keep every panel. */
+.hl-thumb {
+    flex: 0 0 210px;
+    width: 210px;
+    height: auto;
+    display: block;
+    border-radius: 3px;
+}
+.hl-body {
+    flex: 1;
+    min-width: 0;
+}
+.hl-body p {
+    margin: 0;
+    line-height: 1.4;
+}
+.hl-title {
+    font-size: 0.95rem;
+}
+.hl-authors {
+    margin-top: 0.2rem !important;
+    font-size: 0.8rem;
+    opacity: 0.7;
+}
+.hl-venue {
+    margin-top: 0.2rem !important;
+    font-family: Georgia, serif;
+    font-style: italic;
+    font-size: 0.8rem;
+    opacity: 0.7;
+}
+.hl-links {
+    margin-top: 0.35rem !important;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 0.8rem;
+}
+.hl-links a {
+    color: var(--link-color);
+    text-decoration: none;
+}
+.hl-links a:hover {
+    text-decoration: underline;
+}
+
+/* Publications: plain citation list */
+.pub-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.pub + .pub {
+    margin-top: 1.4rem;
+}
+.pub p {
+    margin: 0;
+    line-height: 1.45;
+}
+.pub-authors {
+    font-size: 0.85rem;
+    opacity: 0.75;
+}
+.pub-title {
+    margin-top: 0.15rem !important;
+    font-size: 1rem;
+}
+.pub-title a {
+    color: var(--text-color);
+    text-decoration: none;
+    border-bottom: 1px solid currentColor;
+    opacity: 0.9;
+}
+.pub-title a:hover {
+    opacity: 1;
+}
+.pub-venue {
+    margin-top: 0.15rem !important;
+    font-family: Georgia, serif;
+    font-style: italic;
+    font-size: 0.85rem;
+    opacity: 0.7;
+}
+.pub-note {
+    margin: 1.6rem 0 0;
+    font-size: 0.75rem;
+    opacity: 0.6;
+}
+
+@media (max-width: 600px) {
+    .hl {
+        flex-direction: column;
+    }
+    .hl-thumb {
+        flex: none;
+        width: 100%;
+        max-width: 320px;
+    }
+}

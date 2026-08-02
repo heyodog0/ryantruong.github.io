@@ -1,0 +1,130 @@
+/* Blog post pages. Scoped to .post-page so none of this touches the
+   viewport-centred homepage layout. */
+.post-page {
+    display: block;
+    background: var(--bg-color);
+    color: var(--text-color);
+}
+
+.post-wrap {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 70px 22px 90px;
+}
+
+/* Small site name above the post, links home */
+.post-home {
+    display: inline-block;
+    margin-bottom: 3rem;
+    font-family: Georgia, serif;
+    font-size: 1rem;
+    color: var(--text-color);
+    text-decoration: none;
+    opacity: 0.7;
+}
+.post-home:hover {
+    opacity: 1;
+}
+
+.post-title-main {
+    font-family: Georgia, serif;
+    font-size: 1.9rem;
+    line-height: 1.25;
+    margin: 0;
+}
+.post-meta {
+    margin: 0.5rem 0 2.5rem;
+    font-size: 0.85rem;
+    opacity: 0.6;
+}
+
+/* Body copy: generous measure and leading, modest headings. */
+.post-body {
+    font-size: 1.05rem;
+    line-height: 1.75;
+}
+.post-body p {
+    margin: 0 0 1.3rem;
+}
+.post-body h2 {
+    font-family: Georgia, serif;
+    font-size: 1.25rem;
+    margin: 2.6rem 0 0.9rem;
+}
+.post-body h3 {
+    font-family: Georgia, serif;
+    font-size: 1.05rem;
+    margin: 2rem 0 0.7rem;
+}
+.post-body a {
+    color: var(--link-color);
+}
+.post-body ul,
+.post-body ol {
+    margin: 0 0 1.3rem;
+    padding-left: 1.4rem;
+}
+.post-body li {
+    margin-bottom: 0.4rem;
+}
+.post-body img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 3px;
+}
+.post-body blockquote {
+    margin: 0 0 1.3rem;
+    padding-left: 1rem;
+    border-left: 2px solid color-mix(in srgb, var(--text-color) 25%, transparent);
+    opacity: 0.85;
+}
+.post-body code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.87em;
+    background: color-mix(in srgb, var(--text-color) 9%, transparent);
+    padding: 0.15em 0.35em;
+    border-radius: 3px;
+}
+.post-body pre {
+    background: color-mix(in srgb, var(--text-color) 7%, transparent);
+    padding: 0.9rem 1rem;
+    border-radius: 4px;
+    /* Long lines scroll inside the block instead of widening the page. */
+    overflow-x: auto;
+    margin: 0 0 1.3rem;
+}
+.post-body pre code {
+    background: none;
+    padding: 0;
+    font-size: 0.85rem;
+    line-height: 1.6;
+}
+.post-body hr {
+    border: none;
+    border-top: 1px solid color-mix(in srgb, var(--text-color) 18%, transparent);
+    margin: 2.4rem 0;
+}
+
+.post-foot {
+    margin-top: 3.5rem;
+    padding-top: 1.4rem;
+    border-top: 1px solid color-mix(in srgb, var(--text-color) 15%, transparent);
+    font-size: 0.9rem;
+}
+.post-foot a {
+    color: var(--text-color);
+    text-decoration: none;
+    opacity: 0.65;
+}
+.post-foot a:hover {
+    opacity: 1;
+}
+
+@media (max-width: 600px) {
+    .post-wrap {
+        padding: 45px 20px 70px;
+    }
+    .post-title-main {
+        font-size: 1.5rem;
+    }
+}
