@@ -80,10 +80,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         const view = VIEWS[name];
-        // Mobile pins the layout to the top while any panel is open — on both
-        // body and .content, since each does its own centring.
-        contentEl.classList.toggle('panel-open', name !== 'game');
-        document.body.classList.toggle('panel-open', name !== 'game');
         gameSection.classList.toggle('faded', name !== 'game');
         // The CV needs the game out of the flow entirely so it can size itself.
         gameSection.style.display = view && view.flows ? 'none' : '';

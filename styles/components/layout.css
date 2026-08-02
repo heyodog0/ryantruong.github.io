@@ -25,31 +25,27 @@
 }
 
 @media (max-width: 600px) {
+    /* Pinned to the top in every view. Centring instead would re-centre the
+       whole column — title, nav and all — every time a panel changed the swap
+       container's height, and switching between centred and pinned on open
+       snaps, since justify-content can't be transitioned. Staying pinned means
+       the header simply never moves. */
     body {
-        justify-content: center;
-    }
-    /* Centred content that's taller than the viewport overflows off the top and
-       can't be scrolled back to, so pin the body as well once a panel is open. */
-    body.panel-open {
         justify-content: flex-start;
     }
-    /* The game is short, so centring it in the viewport looks right. */
+    /* Same trick desktop uses: centre the game with a fixed offset rather than
+       flex-centring the column. 313px is the distance from the content box's
+       top edge to the game's centre (header + tagline + nav + half the game),
+       so this lands the game on the viewport's middle — and because the value
+       doesn't depend on the view, the header stays put when a panel opens.
+       The max() keeps it on-screen on short viewports. */
     .content,
     .content.view-cv,
     .content.view-research {
-        justify-content: center;
-        padding-top: 0;
-    }
-    /* Panels are taller than the game, and centring means every change to the
-       swap container's height re-centres the whole column — dragging the title
-       and nav around mid-transition. Pin to the top while a panel is open. */
-    .content.panel-open,
-    .content.panel-open.view-cv,
-    .content.panel-open.view-research {
         justify-content: flex-start;
-        padding-top: 16px;
+        padding-top: max(16px, calc(50vh - 313px));
     }
-    /* Animating height on top of that just prolongs the reflow. */
+    /* Animating the container height just prolongs the reflow on a phone. */
     .swap-container {
         transition: none;
     }
