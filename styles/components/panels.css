@@ -1,7 +1,9 @@
 /* Page layout, view-swap container, and bio/CV panels */
 :root {
-    --cv-embed-height: 800px;
-    --cv-chrome-height: 120px; /* h1 + nav + spacing */
+    /* Shrink to fit short viewports so the page itself never scrolls and the
+       PDF's own scroll does the paging. */
+    --cv-embed-height: min(800px, max(420px, calc(100vh - var(--cv-chrome-height) - 48px)));
+    --cv-chrome-height: 210px; /* h1 + nav + tagline + fallback link + social icons */
 }
 
 body { justify-content: flex-start; }
