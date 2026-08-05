@@ -49,13 +49,8 @@ body, html {
     color: var(--text-color);
 }
 
-/* View Transitions ripple for theme toggle */
-::view-transition-old(root),
-::view-transition-new(root) {
-    animation-duration: 0.8s;
-    animation-timing-function: cubic-bezier(0.9, 0, 1, 1);
-}
-
+/* View Transitions ripple for theme toggle. The old snapshot just sits still
+   while the new one is wiped over it. */
 ::view-transition-old(root) {
     animation: none;
     z-index: 1;
@@ -64,13 +59,12 @@ body, html {
 ::view-transition-new(root) {
     z-index: 9999;
     animation-name: ripple-reveal;
+    animation-duration: 0.6s;
+    /* Ease *out*, not in: the circle has to be visibly leaving the button early
+       on, otherwise it sits sub-pixel for most of the run and then explodes,
+       which reads as a full-page wipe from nowhere rather than a ripple. */
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-@keyframes ripple-reveal {
-    from {
-        clip-path: circle(0px at var(--ripple-x, 50%) var(--ripple-y, 50%));
-    }
-    to {
-        clip-path: circle(100vmax at var(--ripple-x, 50%) var(--ripple-y, 50%));
-    }
-}
+/* @keyframes ripple-reveal is written by scripts/theme.js with the origin and
+   radius as literal px — see the comment there. */

@@ -24,6 +24,30 @@ function createThemeToggle() {
 
     let animating = false;
 
+    // The ripple keyframes are generated per click rather than living in
+    // theme.css with var(--ripple-x/y) placeholders. Two reasons:
+    //   - custom properties have to inherit all the way down the
+    //     ::view-transition pseudo tree to reach the animating pseudo-element;
+    //     where that doesn't happen the var() falls back and the circle starts
+    //     from the middle of the page instead of the button.
+    //   - the end radius has to reach the viewport corner furthest from the
+    //     button. 100vmax isn't enough — from the top-right of a 1000x700
+    //     window the far corner is 1165px away — so the last wedge of the page
+    //     never got revealed and snapped instead.
+    const rippleStyle = document.createElement('style');
+    document.head.appendChild(rippleStyle);
+
+    function setRippleOrigin(x, y) {
+        const radius = Math.hypot(
+            Math.max(x, window.innerWidth - x),
+            Math.max(y, window.innerHeight - y)
+        );
+        rippleStyle.textContent = `@keyframes ripple-reveal {
+            from { clip-path: circle(0px at ${x}px ${y}px); }
+            to   { clip-path: circle(${Math.ceil(radius)}px at ${x}px ${y}px); }
+        }`;
+    }
+
     function toggleTheme() {
         if (animating) return;
         animating = true;
@@ -39,9 +63,7 @@ function createThemeToggle() {
         const pageFade = document.getElementById('page-fade');
         if (pageFade) pageFade.remove();
 
-        // Set ripple origin for CSS
-        document.documentElement.style.setProperty('--ripple-x', `${x}px`);
-        document.documentElement.style.setProperty('--ripple-y', `${y}px`);
+        setRippleOrigin(x, y);
 
         const applyTheme = () => {
             document.documentElement.classList.toggle('dark-mode');
