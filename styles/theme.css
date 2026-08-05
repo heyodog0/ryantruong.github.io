@@ -1,5 +1,9 @@
-/* Theme variables and dark mode styles */
-:root {
+/* Theme variables and dark mode styles.
+   The palettes are also exposed as .theme-light/.theme-dark so a subtree can be
+   rendered in the opposite theme to the page — scripts/theme.js needs that to
+   build the ripple. Keep the two selectors in each rule in sync. */
+:root,
+.theme-light {
     --bg-color: #ffffff;
     --text-color: #333333;
     --nav-link-color: #333333;
@@ -10,7 +14,8 @@
     --link-color: #2f5fb3;
 }
 
-:root.dark-mode {
+:root.dark-mode,
+.theme-dark {
     --bg-color: #1a1a1a;
     --text-color: #ffffff;
     --nav-link-color: #ffffff;
@@ -24,6 +29,9 @@
 /* Theme toggle button */
 .theme-toggle {
     position: fixed;
+    /* Above .theme-reveal, so the button stays put while the ripple grows out
+       of it and you can see where it's coming from. */
+    z-index: 9999;
     top: 20px;
     right: 20px;
     padding: 8px;
@@ -49,22 +57,36 @@ body, html {
     color: var(--text-color);
 }
 
-/* View Transitions ripple for theme toggle. The old snapshot just sits still
-   while the new one is wiped over it. */
-::view-transition-old(root) {
-    animation: none;
-    z-index: 1;
+/* Theme ripple: a copy of the page in the destination theme, revealed through a
+   growing circular clip. Mirrors body's layout so the copy lands exactly on top
+   of the real content. scripts/theme.js builds and animates it. */
+.theme-reveal {
+    position: fixed;
+    z-index: 9998;
+    border-radius: 50%;
+    overflow: hidden;
+    pointer-events: none;
+    background: var(--bg-color);
+    color: var(--text-color);
+    will-change: transform;
 }
 
-::view-transition-new(root) {
+/* Plugin boxes (the CV's PDF) sit above the ripple while it runs rather than
+   being cloned into it — see holdPluginsAbove() in scripts/theme.js. */
+.theme-reveal-hold {
+    position: relative;
     z-index: 9999;
-    animation-name: ripple-reveal;
-    animation-duration: 0.6s;
-    /* Ease *out*, not in: the circle has to be visibly leaving the button early
-       on, otherwise it sits sub-pixel for most of the run and then explodes,
-       which reads as a full-page wipe from nowhere rather than a ripple. */
-    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* @keyframes ripple-reveal is written by scripts/theme.js with the origin and
-   radius as literal px — see the comment there. */
+/* Counter-translated so the copy inside stays pinned to the viewport while the
+   circle above slides across it. */
+.theme-reveal-inner {
+    position: absolute;   /* size is set inline, from clientWidth/Height */
+    will-change: transform;
+}
+
+/* Used for the one frame where the theme is swapped behind the disc, so nothing
+   animates its own colours into place underneath. */
+.no-transitions * {
+    transition: none !important;
+}
