@@ -23,7 +23,9 @@
         <nav>
             <a href="#" id="about-link">About</a>
             <a href="#" id="research-link">Research</a>
-            <a href="#" id="notes-link">Notes</a>
+            <!-- Notes hidden for now. To bring it back: uncomment this
+                 link and drop the `hidden` on #notes-panel below. -->
+            <!-- <a href="#" id="notes-link">Notes</a> -->
             <a href="#" id="cv-link">CV</a>
         </nav>
 
@@ -131,7 +133,7 @@
                 </div>
             </div>
 
-            <div id="notes-panel" class="panel">
+            <div id="notes-panel" class="panel" hidden>
                 <!-- Newest first. To add a note: copy notes/heyodogo.html to
                      notes/<slug>.html, then add an <li> at the top of this list. -->
                 <ul class="post-list">

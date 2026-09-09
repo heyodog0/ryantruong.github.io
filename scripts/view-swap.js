@@ -29,6 +29,12 @@ document.addEventListener('DOMContentLoaded', () => {
             bodyClass: 'view-cv', flows: true,
         },
     };
+    // A view whose nav link or panel is commented out of the HTML is dropped
+    // here, so hiding a section is a pure markup change (see Notes).
+    Object.keys(VIEWS).forEach(name => {
+        const v = VIEWS[name];
+        if (!v.link || !v.panel) delete VIEWS[name];
+    });
     const views = Object.values(VIEWS);
 
     let currentView = 'game';
