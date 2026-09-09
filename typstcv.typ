@@ -112,6 +112,8 @@
 #text(size: 9.5pt)[\* denotes equal contribution]
 #v(6pt)
 
+#strong("Truong, R."), Ying, L., Gershman, S. J., & Irie, K. (2026). PlayTrain: An Efficient Reinforcement Learning Framework for LLM-Generated Adaptable JavaScript Games. #emph("(Submitted)")
+
 Ying, L.\*, #strong("Truong, R.*"), Tenenbaum, J. B., & Gershman, S. J. (2026). Using Theory of Mind to Arbitrate between Social and Non-social Learning. #emph("(Submitted)")
 
 Ying, L., #strong("Truong, R."), Sharma, P., Zhao, K. I., Cloos, N., Allen, K. R., Griffiths, T. L., Collins, K. M., Hernández-Orallo, J., Isola, P., Gershman, S. J., & Tenenbaum, J. B. (2026). AI Gamestore: Scalable, Open-Ended Evaluation of Machine General Intelligence with Human Games. #emph("(Submitted)")
